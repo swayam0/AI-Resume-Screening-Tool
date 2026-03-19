@@ -14,10 +14,18 @@ st.set_page_config(page_title="AI Resume Screener", page_icon="📄", layout="wi
 st.title("🚀 AI Hiring Assistant")
 st.markdown("Automate candidate evaluation by comparing resumes with a given job description.")
 
-if DEFAULT_API_KEY:
-    genai.configure(api_key=DEFAULT_API_KEY)
-# Initialize the model directly
-model = genai.GenerativeModel("gemini-2.5-flash") if DEFAULT_API_KEY else None
+api_key = DEFAULT_API_KEY
+if not api_key:
+    st.sidebar.header("🔑 Configuration")
+    api_key = st.sidebar.text_input("Gemini API Key", type="password")
+    if not api_key:
+        st.sidebar.warning("Please enter your Gemini API Key to proceed.")
+
+if api_key:
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash")
+else:
+    model = None
 
 def extract_text(pdf_file):
     try:
@@ -87,8 +95,8 @@ uploaded_files = st.file_uploader(
 )
 
 if st.button("🔍 Analyze Candidates", type="primary"):
-    if not DEFAULT_API_KEY:
-        st.error("❌ Gemini API Key is missing. Please add it to your .env file.")
+    if not api_key:
+        st.error("❌ Gemini API Key is missing. Please enter it in the sidebar.")
     elif jd and uploaded_files:
         data = []
 
